@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+
 def fuel_for_mass(mass):
     """
     >>> fuel_for_mass(12)
@@ -23,13 +26,11 @@ def weigh_fuel(fuel):
     >>> weigh_fuel(100756)
     50346
     """
-    total_fuel = 0
-    while True:
-        fuel = fuel_for_mass(fuel)
-        total_fuel += fuel
-
-        if fuel == 0:
-            return total_fuel
+    fuel_mass = fuel_for_mass(fuel)
+    if fuel_mass == 0:
+        return 0
+    else:
+        return fuel_mass + weigh_fuel(fuel_mass)
 
 
 if __name__ == "__main__":
