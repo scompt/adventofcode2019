@@ -3,6 +3,7 @@
 import sys
 from operator import add
 
+
 def parse(inp):
     """
     >>> list(parse('R8,U5,L5,D3'))
@@ -15,6 +16,7 @@ def parse(inp):
     [('R', 98), ('U', 47), ('R', 26), ('D', 63), ('R', 33), ('U', 87), ('L', 62), ('D', 20), ('R', 33), ('U', 53), ('R', 51), ('U', 98), ('R', 91), ('D', 20), ('R', 16), ('D', 67), ('R', 40), ('U', 7), ('R', 15), ('U', 6), ('R', 7)]
     """
     return ((turn[0], int(turn[1:])) for turn in inp.split(','))
+
 
 def generate_path(parsed):
     """
@@ -41,6 +43,7 @@ def generate_path(parsed):
             path.append(current_location)
     return path
 
+
 def intersections(path1, path2):
     """
     >>> path1 = generate_path(parse('R8,U5,L5,D3'))
@@ -55,6 +58,7 @@ def intersections(path1, path2):
     candidates.sort(key=lambda r: abs(r[0]) + abs(r[1]))
     return candidates
 
+
 def nearest_intersection_distance(path1, path2):
     """
     >>> path1 = generate_path(parse('R8,U5,L5,D3'))
@@ -64,6 +68,7 @@ def nearest_intersection_distance(path1, path2):
     """
     candidates = intersections(path1, path2)
     return abs(candidates[0][0]) + abs(candidates[0][1])
+
 
 if __name__ == "__main__":
     import sys
