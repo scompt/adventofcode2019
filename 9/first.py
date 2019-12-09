@@ -310,6 +310,6 @@ if __name__ == "__main__":
     input_queue = queue.Queue()
     computer = IntcodeComputer(memory, input_queue, queue.Queue())
 
-    input_queue.put(1)
+    input_queue.put(2)
     computer.run()
     print(computer.flush_output()[0])
