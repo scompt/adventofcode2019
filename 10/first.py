@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import operator
+from math import atan2, pi, sqrt
 from textwrap import dedent
 
 
@@ -274,9 +275,100 @@ def detect_asteroids(from_asteroid, asteroids):
     return detected
 
 
+def laser(asteroids, location):
+    """
+    >>> inp = r'''
+    ... .#....#####...#..
+    ... ##...##.#####..##
+    ... ##...#...#.#####.
+    ... ..#.....X...###..
+    ... ..#.#.....#....##
+    ... '''
+    >>> asteroids = read_input(dedent(inp).strip())
+    >>> monitoring_location = (8, 3)
+    >>> list(laser(asteroids, monitoring_location))
+    [(8, 1), (9, 0), (9, 1), (10, 0), (9, 2), (11, 1), (12, 1), (11, 2), (15, 1), (12, 2), (13, 2), (14, 2), (15, 2), (12, 3), (16, 4), (15, 4), (10, 4), (4, 4), (2, 4), (2, 3), (0, 2), (1, 2), (0, 1), (1, 1), (5, 2), (1, 0), (5, 1), (6, 1), (6, 0), (7, 0), (8, 0), (10, 1), (14, 0), (16, 1), (13, 3), (14, 3)]
+    
+    >>> inp = r'''
+    ... .#..##.###...#######
+    ... ##.############..##.
+    ... .#.######.########.#
+    ... .###.#######.####.#.
+    ... #####.##.#.##.###.##
+    ... ..#####..#.#########
+    ... ####################
+    ... #.####....###.#.#.##
+    ... ##.#################
+    ... #####.##.###..####..
+    ... ..######..##.#######
+    ... ####.##.####...##..#
+    ... .#####..#.######.###
+    ... ##...#.##########...
+    ... #.##########.#######
+    ... .####.#.###.###.#.##
+    ... ....##.##.###..#####
+    ... .#.#.###########.###
+    ... #.#.#.#####.####.###
+    ... ###.##.####.##.#..##
+    ... '''
+    >>> asteroids = read_input(dedent(inp).strip())
+    >>> monitoring_location = (11, 13)
+    >>> destroyed_asteroids = list(laser(asteroids, monitoring_location))
+    >>> destroyed_asteroids[0:3]
+    [(11, 12), (12, 1), (12, 2)]
+    >>> destroyed_asteroids[9]
+    (12, 8)
+    >>> destroyed_asteroids[19]
+    (16, 0)
+    >>> destroyed_asteroids[49]
+    (16, 9)
+    >>> destroyed_asteroids[99]
+    (10, 16)
+    >>> destroyed_asteroids[198]
+    (9, 6)
+    >>> destroyed_asteroids[199]
+    (8, 2)
+    >>> destroyed_asteroids[200]
+    (10, 9)
+    >>> destroyed_asteroids[298]
+    (11, 1)
+    
+    """
+    ordered = []
+    for asteroid in asteroids:
+        if location == asteroid:
+            continue
+
+        dist = sqrt(
+            (location[1] - asteroid[1]) * (location[1] - asteroid[1])
+            + (location[0] - asteroid[0]) * (location[0] - asteroid[0])
+        )
+        angle = atan2(asteroid[1] - location[1], asteroid[0] - location[0])
+        ordered.append((asteroid, dist, (angle - (-pi / 2) + (2 * pi)) % (2 * pi)))
+
+    sought_angle = -0.000001
+    sought_distance = 0
+
+    ordered = sorted(ordered, key=operator.itemgetter(2))
+    while len(ordered) > 0:
+        try:
+            sought = min(
+                [x for x in ordered if x[2] > sought_angle],
+                key=operator.itemgetter(2, 1),
+            )
+            sought_angle = sought[2]
+            sought_distance = sought[1]
+            ordered.remove(sought)
+            yield (sought[0])
+        except ValueError:
+            sought_angle = -0.000001
+
+
 if __name__ == "__main__":
     import sys
 
     lines = sys.stdin.readlines()
-    asteroids = read_input("\n".join(lines))
-    print(best_asteroid(asteroids)[1])
+    asteroids = read_input("".join(lines))
+    monitoring_location, _ = best_asteroid(asteroids)
+    lasered = list(laser(asteroids, monitoring_location))
+    print(lasered[199][0] * 100 + lasered[199][1])
