@@ -324,14 +324,12 @@ direction_movement = {
 
 class PaintRobot(object):
     def __init__(self, input_queue, output_queue):
-        self.colors = defaultdict(lambda: 0)
+        self.colors = defaultdict(lambda: 0, {(0, 0): 1})
         self.current_location = (0, 0)
         self.direction = Direction.UP
 
         self.input_queue = input_queue
         self.output_queue = output_queue
-
-        self.painted = set()
 
     def run(self):
         while True:
@@ -342,8 +340,6 @@ class PaintRobot(object):
             if color_to_paint is None:
                 return  # Sentinel
             self.colors[self.current_location] = color_to_paint
-
-            self.painted.add(self.current_location)
 
             turn_direction = self.input_queue.get()
             if turn_direction == 0:
@@ -356,6 +352,20 @@ class PaintRobot(object):
                 self.current_location[0] + increment[0],
                 self.current_location[1] + increment[1],
             )
+
+    def print_painted(self):
+        min_x = min(self.colors, key=operator.itemgetter(0))[0]
+        max_x = max(self.colors, key=operator.itemgetter(0))[0]
+        min_y = max(self.colors, key=operator.itemgetter(1))[1]
+        max_y = min(self.colors, key=operator.itemgetter(1))[1]
+
+        for y in range(min_y, max_y - 1, -1):
+            for x in range(min_x, max_x + 1):
+                if self.colors[(x, y)] == 0:
+                    print("#", end="")
+                else:
+                    print(".", end="")
+            print()
 
 
 if __name__ == "__main__":
@@ -377,4 +387,4 @@ if __name__ == "__main__":
 
     computer_thread.join()
     output_queue.put(None)  # Sentinel
-    print(len(paint_robot.painted))
+    paint_robot.print_painted()
