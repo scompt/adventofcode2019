@@ -301,6 +301,63 @@ def optimize_thruster(program, with_feedback):
     return max_thrust
 
 
+class Direction(IntEnum):
+    UP = 0
+    RIGHT = 1
+    DOWN = 2
+    LEFT = 3
+
+    def right(self):
+        return Direction((self.value + 1) % len(Direction))
+
+    def left(self):
+        return Direction((self.value - 1) % len(Direction))
+
+
+direction_movement = {
+    Direction.UP: (0, 1),
+    Direction.RIGHT: (1, 0),
+    Direction.DOWN: (0, -1),
+    Direction.LEFT: (-1, 0),
+}
+
+
+class PaintRobot(object):
+    def __init__(self, input_queue, output_queue):
+        self.colors = defaultdict(lambda: 0)
+        self.current_location = (0, 0)
+        self.direction = Direction.UP
+
+        self.input_queue = input_queue
+        self.output_queue = output_queue
+
+        self.painted = set()
+
+    def run(self):
+        while True:
+            current_color = self.colors[self.current_location]
+            self.output_queue.put(current_color)
+
+            color_to_paint = self.input_queue.get()
+            if color_to_paint is None:
+                return  # Sentinel
+            self.colors[self.current_location] = color_to_paint
+
+            self.painted.add(self.current_location)
+
+            turn_direction = self.input_queue.get()
+            if turn_direction == 0:
+                self.direction = self.direction.left()
+            elif turn_direction == 1:
+                self.direction = self.direction.right()
+
+            increment = direction_movement[self.direction]
+            self.current_location = (
+                self.current_location[0] + increment[0],
+                self.current_location[1] + increment[1],
+            )
+
+
 if __name__ == "__main__":
     import sys
 
@@ -308,8 +365,16 @@ if __name__ == "__main__":
     memory = read_input(lines[0])
 
     input_queue = queue.Queue()
-    computer = IntcodeComputer(memory, input_queue, queue.Queue())
+    output_queue = queue.Queue()
 
-    input_queue.put(2)
-    computer.run()
-    print(computer.flush_output()[0])
+    paint_robot = PaintRobot(output_queue, input_queue)
+    robot_thread = threading.Thread(target=paint_robot.run)
+    robot_thread.start()
+
+    computer = IntcodeComputer(memory, input_queue, output_queue)
+    computer_thread = threading.Thread(target=computer.run)
+    computer_thread.start()
+
+    computer_thread.join()
+    output_queue.put(None)  # Sentinel
+    print(len(paint_robot.painted))
