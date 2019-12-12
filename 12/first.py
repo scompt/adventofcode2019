@@ -4,12 +4,22 @@ from collections import defaultdict
 from itertools import combinations
 from textwrap import dedent
 
+from numpy import lcm
+
 
 class Position(object):
     def __init__(self, x, y, z):
         self.x = x
         self.y = y
         self.z = z
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, Position)
+            and self.x == other.x
+            and self.y == other.y
+            and self.z == other.z
+        )
 
     def __repr__(self):
         return f"({self.x}, {self.y}, {self.z})"
@@ -20,6 +30,14 @@ class Velocity(object):
         self.x = x
         self.y = y
         self.z = z
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, Velocity)
+            and self.x == other.x
+            and self.y == other.y
+            and self.z == other.z
+        )
 
     def __repr__(self):
         return f"({self.x}, {self.y}, {self.z})"
@@ -43,6 +61,13 @@ class Moon(object):
             abs(getattr(self.velocity, axis)) for axis in ["x", "y", "z"]
         )
 
+    def __eq__(self, other):
+        return (
+            isinstance(self, Moon)
+            and self.position == other.position
+            and self.velocity == other.velocity
+        )
+
     def __repr__(self):
         return f"<Moon position={self.position} velocity={self.velocity}>"
 
@@ -63,6 +88,22 @@ class System(object):
         for l in lines:
             coords = dict(c.split("=") for c in l[1:-1].split(", "))
             self.moons.append(Moon(**coords))
+
+    def find_period(self, axis):
+        target = [
+            (getattr(m.position, axis), getattr(m.velocity, axis)) for m in self.moons
+        ]
+        step = 0
+        while True:
+            self.step()
+            step += 1
+
+            candidate = [
+                (getattr(m.position, axis), getattr(m.velocity, axis))
+                for m in self.moons
+            ]
+            if candidate == target:
+                return step
 
     def step(self, count=1):
         """
@@ -169,7 +210,9 @@ class System(object):
 if __name__ == "__main__":
     import sys
 
+    periods = []
     lines = [l.strip() for l in sys.stdin.readlines()]
-    s = System(lines)
-    s.step(1000)
-    print(s.energy())
+    for axis in ["x", "y", "z"]:
+        s = System(lines)
+        periods.append(s.find_period(axis))
+    print(lcm.reduce(periods))
