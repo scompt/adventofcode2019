@@ -157,7 +157,7 @@ def best_asteroid(asteroids):
     >>> asteroids = read_input(dedent(inp).strip())
     >>> best_asteroid(asteroids)
     ((3, 4), 8)
-    
+
     >>> inp = r'''
     ... ......#.#.
     ... #..#.#....
@@ -173,7 +173,7 @@ def best_asteroid(asteroids):
     >>> asteroids = read_input(dedent(inp).strip())
     >>> best_asteroid(asteroids)
     ((5, 8), 33)
-    
+
     >>> inp = r'''
     ... #.#...#.#.
     ... .###....#.
@@ -189,7 +189,7 @@ def best_asteroid(asteroids):
     >>> asteroids = read_input(dedent(inp).strip())
     >>> best_asteroid(asteroids)
     ((1, 2), 35)
-    
+
     >>> inp = r'''
     ... .#..#..###
     ... ####.###.#
@@ -205,7 +205,7 @@ def best_asteroid(asteroids):
     >>> asteroids = read_input(dedent(inp).strip())
     >>> best_asteroid(asteroids)
     ((6, 3), 41)
-    
+
     >>> inp = r'''
     ... .#..##.###...#######
     ... ##.############..##.
@@ -288,7 +288,7 @@ def laser(asteroids, location):
     >>> monitoring_location = (8, 3)
     >>> list(laser(asteroids, monitoring_location))
     [(8, 1), (9, 0), (9, 1), (10, 0), (9, 2), (11, 1), (12, 1), (11, 2), (15, 1), (12, 2), (13, 2), (14, 2), (15, 2), (12, 3), (16, 4), (15, 4), (10, 4), (4, 4), (2, 4), (2, 3), (0, 2), (1, 2), (0, 1), (1, 1), (5, 2), (1, 0), (5, 1), (6, 1), (6, 0), (7, 0), (8, 0), (10, 1), (14, 0), (16, 1), (13, 3), (14, 3)]
-    
+
     >>> inp = r'''
     ... .#..##.###...#######
     ... ##.############..##.
@@ -332,7 +332,7 @@ def laser(asteroids, location):
     (10, 9)
     >>> destroyed_asteroids[298]
     (11, 1)
-    
+
     """
     ordered = []
     for asteroid in asteroids:

@@ -16,7 +16,7 @@ def read_input(inp):
     >>> read_input(dedent(inp).strip())
     [1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50]
     """
-    return [int(i.strip()) for i in inp.split(',')]
+    return [int(i.strip()) for i in inp.split(",")]
 
 
 def process(memory):
@@ -40,17 +40,17 @@ def process(memory):
         intcode = memory[pc]
 
         if intcode == 1:
-            operand1 = memory[memory[pc+1]]
-            operand2 = memory[memory[pc+2]]
+            operand1 = memory[memory[pc + 1]]
+            operand2 = memory[memory[pc + 2]]
             result = operand1 + operand2
-            memory[memory[pc+3]] = result
+            memory[memory[pc + 3]] = result
             pc += 4
 
         elif intcode == 2:
-            operand1 = memory[memory[pc+1]]
-            operand2 = memory[memory[pc+2]]
+            operand1 = memory[memory[pc + 1]]
+            operand2 = memory[memory[pc + 2]]
             result = operand1 * operand2
-            memory[memory[pc+3]] = result
+            memory[memory[pc + 3]] = result
             pc += 4
 
         elif intcode == 99:
@@ -76,6 +76,7 @@ def search(memory, target):
 
 if __name__ == "__main__":
     import sys
-    memory = read_input(','.join(sys.stdin.readlines()))
+
+    memory = read_input(",".join(sys.stdin.readlines()))
     noun, verb = search(memory, 19690720)
     print(100 * noun + verb)

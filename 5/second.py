@@ -39,7 +39,7 @@ def op_add(memory, modes, pc, inputs):
     operand2 = read_memory(memory, memory[pc + 2], modes[1])
     result = operand1 + operand2
     memory[memory[pc + 3]] = result
-    return pc+4
+    return pc + 4
 
 
 def op_mul(memory, modes, pc, inputs):
@@ -47,20 +47,21 @@ def op_mul(memory, modes, pc, inputs):
     operand2 = read_memory(memory, memory[pc + 2], modes[1])
     result = operand1 * operand2
     memory[memory[pc + 3]] = result
-    return pc+4
+    return pc + 4
 
 
 def op_load(memory, modes, pc, inputs):
     loc = memory[pc + 1]
     val = int(inputs.pop(0))
     memory[loc] = val
-    return pc+2
+    return pc + 2
 
 
 def op_print(memory, modes, pc, inputs):
     loc = memory[pc + 1]
     print(memory[loc])
-    return pc+2
+    return pc + 2
+
 
 def op_jump_if_true(memory, modes, pc, inputs):
     operand1 = read_memory(memory, memory[pc + 1], modes[0])
@@ -68,7 +69,8 @@ def op_jump_if_true(memory, modes, pc, inputs):
     if operand1 > 0:
         return operand2
     else:
-        return pc+3
+        return pc + 3
+
 
 def op_jump_if_false(memory, modes, pc, inputs):
     operand1 = read_memory(memory, memory[pc + 1], modes[0])
@@ -76,21 +78,23 @@ def op_jump_if_false(memory, modes, pc, inputs):
     if operand1 == 0:
         return operand2
     else:
-        return pc+3
+        return pc + 3
+
 
 def op_less_than(memory, modes, pc, inputs):
     operand1 = read_memory(memory, memory[pc + 1], modes[0])
     operand2 = read_memory(memory, memory[pc + 2], modes[1])
-    loc = memory[pc+3]
+    loc = memory[pc + 3]
     memory[loc] = 1 if operand1 < operand2 else 0
-    return pc+4
+    return pc + 4
+
 
 def op_equals(memory, modes, pc, inputs):
     operand1 = read_memory(memory, memory[pc + 1], modes[0])
     operand2 = read_memory(memory, memory[pc + 2], modes[1])
-    loc = memory[pc+3]
+    loc = memory[pc + 3]
     memory[loc] = 1 if operand1 == operand2 else 0
-    return pc+4
+    return pc + 4
 
 
 def op_halt(memory, modes, pc, inputs):

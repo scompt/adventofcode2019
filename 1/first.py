@@ -14,7 +14,7 @@ def fuel_for_mass(mass):
     >>> fuel_for_mass(0)
     0
     """
-    return max(0, mass//3 - 2)
+    return max(0, mass // 3 - 2)
 
 
 def weigh_fuel(fuel):
@@ -35,5 +35,5 @@ def weigh_fuel(fuel):
 
 if __name__ == "__main__":
     import sys
-    print(sum(weigh_fuel(int(line.strip())) for line in
-          sys.stdin.readlines()))
+
+    print(sum(weigh_fuel(int(line.strip())) for line in sys.stdin.readlines()))

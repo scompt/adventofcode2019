@@ -16,7 +16,7 @@ def parse(inp):
     >>> list(parse('R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51,U98,R91,D20,R16,D67,R40,U7,R15,U6,R7'))
     [('R', 98), ('U', 47), ('R', 26), ('D', 63), ('R', 33), ('U', 87), ('L', 62), ('D', 20), ('R', 33), ('U', 53), ('R', 51), ('U', 98), ('R', 91), ('D', 20), ('R', 16), ('D', 67), ('R', 40), ('U', 7), ('R', 15), ('U', 6), ('R', 7)]
     """
-    return ((turn[0], int(turn[1:])) for turn in inp.split(','))
+    return ((turn[0], int(turn[1:])) for turn in inp.split(","))
 
 
 def generate_path(parsed):
@@ -30,13 +30,13 @@ def generate_path(parsed):
     path = [current_location]
 
     for direction, distance in parsed:
-        if direction == 'D':
+        if direction == "D":
             operand = (0, -1)
-        elif direction == 'U':
+        elif direction == "U":
             operand = (0, 1)
-        elif direction == 'L':
+        elif direction == "L":
             operand = (-1, 0)
-        elif direction == 'R':
+        elif direction == "R":
             operand = (1, 0)
 
         for _ in range(distance):
@@ -85,6 +85,7 @@ def nearest_intersection_distance(path1, path2):
 
 if __name__ == "__main__":
     import sys
+
     lines = sys.stdin.readlines()
     path1 = generate_path(parse(lines[0]))
     path2 = generate_path(parse(lines[1]))
