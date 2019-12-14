@@ -32,11 +32,12 @@ class HaltException(Exception):
 
 
 class IntcodeComputer(object):
-    def __init__(self, program, input_queue=queue.Queue(), output_queue=queue.Queue()):
+    def __init__(self, program, input_queue, output_queue, input_ready):
         self.memory = defaultdict(lambda: 0, enumerate(program))
         self.pc = 0
         self.relative_base = 0
         self.input_queue = input_queue
+        self.input_ready = input_ready
         self.output_queue = output_queue
 
         self.operations = {
@@ -120,7 +121,17 @@ class IntcodeComputer(object):
         return self.pc + 4
 
     def op_load(self, modes):
-        val = int(self.input_queue.get())
+        # print('1234'*100)
+        val = None
+        while val is None:
+            with self.input_ready:
+                # print('7890'*2)
+                self.input_ready.notify_all()
+                # print('jljklk'*2)
+            val = int(self.input_queue.get())
+            # print(f'read: {val}')
+            # print(f'ooo{val}ooo')
+
         self.write_memory(self.memory[self.pc + 1], modes[0], val)
         return self.pc + 2
 
@@ -211,6 +222,7 @@ class IntcodeComputer(object):
         """
         while True:
             intcode = self.memory[self.pc]
+            # print(f'xxxx{intcode}')
 
             try:
                 opcode = intcode % 100
@@ -219,172 +231,9 @@ class IntcodeComputer(object):
                 self.pc = op(modes)
 
             except HaltException:
+                print("halting")
                 return
 
             except KeyError:
                 raise Exception("Unexpected intcode: %s" % intcode)
 
-
-def calculate_thruster(program, phase_sequence):
-    """
-    >>> program = program = IntcodeComputer.read_input('3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0')
-    >>> phase_sequence = '43210'
-    >>> calculate_thruster(program, phase_sequence)
-    43210
-    >>> program = IntcodeComputer.read_input('3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0')
-    >>> phase_sequence = '01234'
-    >>> calculate_thruster(program, phase_sequence)
-    54321
-    >>> program = IntcodeComputer.read_input('3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0')
-    >>> phase_sequence = '10432'
-    >>> calculate_thruster(program, phase_sequence)
-    65210
-
-    >>> program = IntcodeComputer.read_input('3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5')
-    >>> phase_sequence = '98765'
-    >>> calculate_thruster(program, phase_sequence)
-    139629729
-    >>> program = IntcodeComputer.read_input('3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10')
-    >>> phase_sequence = '97856'
-    >>> calculate_thruster(program, phase_sequence)
-    18216
-    """
-    amp_count = len(phase_sequence)
-
-    queues = [queue.Queue() for i in range(amp_count)]
-    computers = [
-        IntcodeComputer(program, queues[i], queues[(i + 1) % amp_count])
-        for i in range(amp_count)
-    ]
-    threads = [threading.Thread(target=computer.run) for computer in computers]
-
-    for i in range(amp_count):
-        phase = int(phase_sequence[i])
-        queues[i].put(phase)
-
-    queues[0].put(0)
-
-    for t in threads:
-        t.start()
-    for t in threads:
-        t.join()
-
-    return queues[0].get()
-
-
-def optimize_thruster(program, with_feedback):
-    """
-    >>> program = IntcodeComputer.read_input('3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0')
-    >>> optimize_thruster(program, False)
-    43210
-    >>> program = IntcodeComputer.read_input('3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0')
-    >>> optimize_thruster(program, False)
-    54321
-    >>> program = IntcodeComputer.read_input('3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0')
-    >>> optimize_thruster(program, False)
-    65210
-
-    >>> program = IntcodeComputer.read_input('3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5')
-    >>> optimize_thruster(program, True)
-    139629729
-    >>> program = IntcodeComputer.read_input('3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10')
-    >>> optimize_thruster(program, True)
-    18216
-    """
-    if with_feedback:
-        phases = list(permutations([5, 6, 7, 8, 9]))
-    else:
-        phases = list(permutations([0, 1, 2, 3, 4]))
-
-    thrusts = list(map(lambda p: calculate_thruster(program, p), phases))
-    max_index, max_thrust = max(enumerate(thrusts), key=operator.itemgetter(1))
-    return max_thrust
-
-
-class Direction(IntEnum):
-    UP = 0
-    RIGHT = 1
-    DOWN = 2
-    LEFT = 3
-
-    def right(self):
-        return Direction((self.value + 1) % len(Direction))
-
-    def left(self):
-        return Direction((self.value - 1) % len(Direction))
-
-
-direction_movement = {
-    Direction.UP: (0, 1),
-    Direction.RIGHT: (1, 0),
-    Direction.DOWN: (0, -1),
-    Direction.LEFT: (-1, 0),
-}
-
-
-class PaintRobot(object):
-    def __init__(self, input_queue, output_queue):
-        self.colors = defaultdict(lambda: 0, {(0, 0): 1})
-        self.current_location = (0, 0)
-        self.direction = Direction.UP
-
-        self.input_queue = input_queue
-        self.output_queue = output_queue
-
-    def run(self):
-        while True:
-            current_color = self.colors[self.current_location]
-            self.output_queue.put(current_color)
-
-            color_to_paint = self.input_queue.get()
-            if color_to_paint is None:
-                return  # Sentinel
-            self.colors[self.current_location] = color_to_paint
-
-            turn_direction = self.input_queue.get()
-            if turn_direction == 0:
-                self.direction = self.direction.left()
-            elif turn_direction == 1:
-                self.direction = self.direction.right()
-
-            increment = direction_movement[self.direction]
-            self.current_location = (
-                self.current_location[0] + increment[0],
-                self.current_location[1] + increment[1],
-            )
-
-    def print_painted(self):
-        min_x = min(self.colors, key=operator.itemgetter(0))[0]
-        max_x = max(self.colors, key=operator.itemgetter(0))[0]
-        min_y = max(self.colors, key=operator.itemgetter(1))[1]
-        max_y = min(self.colors, key=operator.itemgetter(1))[1]
-
-        for y in range(min_y, max_y - 1, -1):
-            for x in range(min_x, max_x + 1):
-                if self.colors[(x, y)] == 0:
-                    print("#", end="")
-                else:
-                    print(".", end="")
-            print()
-
-
-if __name__ == "__main__":
-    import sys
-
-    lines = sys.stdin.readlines()
-    memory = IntcodeComputer.read_input(lines[0])
-
-    input_queue = queue.Queue()
-    output_queue = queue.Queue()
-
-    paint_robot = PaintRobot(output_queue, input_queue)
-    robot_thread = threading.Thread(target=paint_robot.run)
-    robot_thread.start()
-
-    computer = IntcodeComputer(memory, input_queue, output_queue)
-    computer_thread = threading.Thread(target=computer.run)
-    computer_thread.start()
-
-    computer_thread.join()
-    output_queue.put(None)  # Sentinel
-    paint_robot.print_painted()
