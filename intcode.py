@@ -231,9 +231,8 @@ class IntcodeComputer(object):
                 self.pc = op(modes)
 
             except HaltException:
-                print("halting")
+                # print("halting")
                 return
 
             except KeyError:
                 raise Exception("Unexpected intcode: %s" % intcode)
-
