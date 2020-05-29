@@ -77,6 +77,7 @@ class ASCII:
 if __name__ == "__main__":
     lines = sys.stdin.readlines()
     program = IntcodeComputer.read_input(lines[0])
+    program[0] = 2
 
     oq = queue.Queue(1)
     iq = queue.Queue(1)
